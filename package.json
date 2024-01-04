@@ -4,7 +4,8 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "start": "ts-node ./main.ts"
+        "start": "ts-node ./main.ts",
+        "update": "chmod +x ./update_time.sh && ./update_time.sh"
     },
     "repository": {
         "type": "git",

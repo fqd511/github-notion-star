@@ -43,3 +43,6 @@ jobs:
         with:
           name: notion-sync-storage
           path: .cache
+      - name: "update log and commit"
+        run: npm run update
+  
