@@ -1,6 +1,8 @@
 name: "Update Commit Bot"
 
 on:
+  schedule:
+    - cron: '15 11 * * *'
   workflow_dispatch:
 jobs:
   run:
