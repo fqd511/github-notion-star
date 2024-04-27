@@ -2,7 +2,7 @@
 current_date=$(date +%d)
 
 # filter date
-if (( current_date % 9 == 0 )); then
+if [ $((current_date % 9)) -eq 0 ]; then
     echo "commit log"
     # update date file and commit
     echo $(date) > updated_at
