@@ -4,15 +4,16 @@ on:
   schedule:
     - cron: '0 */6 * * *'
   workflow_dispatch:
+
 jobs:
   partial-sync:
     runs-on: ubuntu-latest
     environment: notion-sync
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4 # 升级
 
       - name: Download cache storage of last build
-        uses: dawidd6/action-download-artifact@v2
+        uses: dawidd6/action-download-artifact@v3 # 顺便也升级下这个
         continue-on-error: true
         with:
           workflow: partial-sync.yml
@@ -21,13 +22,13 @@ jobs:
           path: .cache
 
       - name: Setup environment
-        uses: actions/setup-node@v2.2.0
+        uses: actions/setup-node@v4 # 升级以解决 400 错误
         with:
-          always-auth: false
           node-version: 16.x
-          cache: yarn
+          cache: 'yarn'
 
-      - run: yarn
+      - name: Install dependencies
+        run: yarn --frozen-lockfile
 
       - name: Run Partial Sync
         env:
@@ -43,6 +44,6 @@ jobs:
         with:
           name: notion-sync-storage
           path: .cache
+
       - name: "update log and commit"
         run: npm run update
-  
