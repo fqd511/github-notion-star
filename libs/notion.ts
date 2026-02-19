@@ -14,6 +14,10 @@ export class Notion {
     constructor() {
         this.notion = new Client({
             auth: process.env.NOTION_API_KEY,
+            /* * 增加超时时间到 60 秒。
+             * 如果你的数据库页面非常多（上千条），建议设置为 120000 (2分钟)
+             */
+            timeoutMs: 60000, 
         });
 
         this.pages = get(NAMESPACE, {});
@@ -46,16 +50,21 @@ export class Notion {
         let cursor: string | undefined = undefined;
 
         while (hasNext) {
-            const database: DatabasesQueryResponse = await this.notion.databases.query({
-                database_id: databaseId,
-                page_size: 100,
-                start_cursor: cursor,
-            });
+            try {
+                const database: DatabasesQueryResponse = await this.notion.databases.query({
+                    database_id: databaseId,
+                    page_size: 100,
+                    start_cursor: cursor,
+                });
 
-            this.addPages(database.results as NotionPage[]);
-            hasNext = database.has_more;
-            // @ts-ignore
-            cursor = database.next_cursor;
+                this.addPages(database.results as NotionPage[]);
+                hasNext = database.has_more;
+                // @ts-ignore
+                cursor = database.next_cursor;
+            } catch (error) {
+                console.error(`Notion: Error during database query:`, error);
+                throw error; // 向上抛出以停止 Action，避免因数据不全导致的误删
+            }
         }
 
         console.log(`Notion: Get all pages success, count is ${Object.keys(this.pages).length}`);
@@ -65,9 +74,13 @@ export class Notion {
 
     addPages(pages: NotionPage[]) {
         pages.forEach((page) => {
-            this.pages[page.properties.Name.title[0].plain_text] = {
-                id: page.id,
-            };
+            // 增加安全检查，防止 title 为空时报错
+            const title = page.properties.Name.title[0]?.plain_text;
+            if (title) {
+                this.pages[title] = {
+                    id: page.id,
+                };
+            }
         });
 
         this.save();
