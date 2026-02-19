@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     environment: notion-sync
     steps:
-      - uses: actions/checkout@v4 # 升级
+      - uses: actions/checkout@v4 # 升级到 v4
 
-      - name: Download cache storage of last build
-        uses: dawidd6/action-download-artifact@v3 # 顺便也升级下这个
+      - name: Download cache storage
+        uses: dawidd6/action-download-artifact@v3 # 升级到 v3
         continue-on-error: true
         with:
           workflow: partial-sync.yml
@@ -22,13 +22,16 @@ jobs:
           path: .cache
 
       - name: Setup environment
-        uses: actions/setup-node@v4 # 升级以解决 400 错误
+        uses: actions/setup-node@v4 # 升级到 v4 解决 400 错误
         with:
           node-version: 16.x
           cache: 'yarn'
 
-      - name: Install dependencies
-        run: yarn --frozen-lockfile
+      - run: yarn
+
+      # 关键步骤：防止 ts-node 运行时找不到目录报错 ENOENT
+      - name: Prepare Cache Directory
+        run: mkdir -p .cache
 
       - name: Run Partial Sync
         env:
